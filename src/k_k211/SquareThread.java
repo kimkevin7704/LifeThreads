@@ -10,7 +10,7 @@ public class SquareThread extends Thread{
 	}
 	
 	public void run() {
-		//each generation, check other squares
+		//each generation, check other squares and update
 		for(int i = 0; i < Grid.generations; i++)
 		{
 			Grid.checkSquare(indexInGrid, Grid.grid);
