@@ -9,12 +9,15 @@ public class SquareThread extends Thread{
 		indexInGrid = index;
 	}
 	
+	SquareThread(int index, int invalue) {
+		value = invalue;
+		indexInGrid = index;
+	}
+	
 	public void run() {
-		//each generation, check other squares and update
-		for(int i = 0; i < Grid.generations; i++)
-		{
-			Grid.checkSquare(indexInGrid, Grid.grid);
-		}
+
+			Grid.checkSquare(indexInGrid);
+
 	}
 	
 	public void setValue(int input) {
@@ -24,10 +27,14 @@ public class SquareThread extends Thread{
 	public String getValue() {
 		String valueStr = new String("");
 		if(value == 0)
-			valueStr = "X";
-		if(value == 1)
 			valueStr = "O";
+		if(value == 1)
+			valueStr = "X";
 		return valueStr;
+	}
+	
+	public int getValueInt() {
+		return value;
 	}
 	
 	public int getIndexInGrid() {

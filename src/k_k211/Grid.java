@@ -1,52 +1,99 @@
 package k_k211;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.*;
 
-public class Grid {
+public class Grid extends Thread{
 	static int dimensions;
 	static int generations;
 	static ArrayList<SquareThread> grid;
+	static ArrayList<SquareThread> temp;
 	
 	Grid(int dimension) {
 		dimensions = dimension;
+		System.out.println("Enter how many generations to run: ");
+		Scanner reader = new Scanner(System.in);
+		generations = reader.nextInt();
+		grid = new ArrayList<SquareThread>(dimensions);
+		temp = new ArrayList<SquareThread>();
+		
+	}
+	
+	public void run()
+	{
 		grid = new ArrayList<SquareThread>(dimensions * dimensions);
 		for(int i = 0; i < dimensions * dimensions; i++) {
 			grid.add(new SquareThread(i));
 		}
-		System.out.println("Enter how many generations to run: ");
-		Scanner reader = new Scanner(System.in);
-		generations = reader.nextInt();
-		
 		populateGrid();
-		
-		for(int i = 0; i < dimensions * dimensions; i++) {
-			grid.get(i).run();
+		System.out.println("Initial generation");
+		printGrid();
+		for(int i = 0; i < generations; i++)
+		{
+			if(i > 0)
+			{
+				System.out.println("\nAfter " + (i + 1) + " generations...");
+				printGrid();
+				grid.clear();
+				for(int m = 0; m < grid.size(); m++)
+				{
+					grid.add(new SquareThread(m, temp.get(m).getValueInt()));
+				}
+			}
+			for(int k = 0; k < grid.size() ; k++)
+			{
+				grid.get(k).start();
+				for(int j = 0; j < grid.size(); j++)
+				{
+					try {
+						grid.get(k).join();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+			for(int f = 0; f < grid.size(); f++)
+			{
+				temp.add(new SquareThread(f, grid.get(f).getValueInt()));
+			}
+			
+			if(i == 0)
+			{
+				System.out.println("\nAfter " + (i + 1) + " generations...");
+				printGrid();
+			}
+			
 		}
-		
-		System.out.println("\nAfter " + generations + " generations...");
-		this.printGrid();
 	}
 	
 	public void populateGrid() {
-		for(int i = 0; i < dimensions; i++)
-		{
-			for(int k = 0; k < dimensions; k++)
+		try {
+			FileInputStream inputFile = new FileInputStream("grid.txt");
+			Scanner input = new Scanner(inputFile);
+			
+			String inputValues = null;
+			
+			for(int i = 0; i < dimensions; i++)
 			{
-				if(Math.random() < 0.5)
-				{					
-					grid.get(i * 20 + k).setValue(0);
-				}
-				else
+				inputValues = input.nextLine();
+				for(int k = 0; k < dimensions; k++)
 				{
-					grid.get(i * 20 + k).setValue(1);
-				}
-			}	
+					if(inputValues.charAt(k) == 'O')
+						grid.get(i * 20 + k).setValue(0);
+					else
+						grid.get(i * 20 + k).setValue(1);
+				}	
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		System.out.println("Grid has been populated...");
-		this.printGrid();
 	}
 	
-	public static void checkSquare(int indexInGrid, ArrayList<SquareThread> grid) {
+	public static void checkSquare(int indexInGrid) {
 		int aliveNeighbors = findNeighbors(grid.get(indexInGrid));
 		//if square is alive
 		if(grid.get(indexInGrid).getValue() == "X")
@@ -85,11 +132,11 @@ public class Grid {
 			isRight = true;
 		}
 		//if on the very top, dont check top
-		if(currentIndex / dimensions < 1) {
+		if(currentIndex <= 19) {
 			isTop = true;
 		}
 		//if on the very bottom, dont check bottom
-		if(currentIndex / dimensions >= 19) {
+		if(currentIndex > 379 && currentIndex <= 399) {
 			isBot = true;
 		}
 		
@@ -108,7 +155,7 @@ public class Grid {
 		//check left bot
 		if(!isRight && !isBot)
 		{
-			if(grid.get(currentIndex + 19).getValue() == "X")
+			if(grid.get(currentIndex + 21).getValue() == "X")
 				liveNeighbors++;
 		}
 		//check top
@@ -146,13 +193,12 @@ public class Grid {
 	}
 	
 	public void printGrid() {
-		for(int i = 0; i < dimensions; i++)
+		for(int i = 0; i < grid.size(); i++)
 		{
-			for(int k = 0; k < dimensions; k++)
-			{
-				System.out.print(grid.get(i * 20 + k).getValue());
-			}
-			System.out.print("\n");
+			System.out.print(grid.get(i).getValue());
+			if(i % 20 == 19)
+				System.out.print('\n');
 		}
+		System.out.print('\n');
 	}
 }
